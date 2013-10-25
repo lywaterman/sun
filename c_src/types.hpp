@@ -42,6 +42,7 @@ class lpid_t
 public :
     ErlNifPid* ptr() { return &pid; }
     ErlNifPid const* ptr() const { return &pid; }
+	ERL_NIF_TERM to_int() const { return (this->pid.pid); }
 private :
     ErlNifPid pid;
 };

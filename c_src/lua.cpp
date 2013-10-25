@@ -21,6 +21,7 @@ extern "C"
 extern "C"
 {
 	#include "luaxml/interface.h"
+	#include "lanes/lanes.h"
 }
 
 namespace lua {
@@ -61,6 +62,63 @@ public :
     erlcpp::term_t operator()(vm_t::tasks::resp_t const& resp) { return resp.term; }
 };
 
+void dispatch(vm_t & vm)
+{
+	stack_guard_t guard(vm);
+	try
+	{
+		lua_getglobal( vm.state(), "debug" );
+		lua_getfield( vm.state(), -1, "traceback" );
+		lua_remove( vm.state(), -2 );
+
+		lua_getglobal(vm.state(), "get_sun_shine");
+
+		if (lua_isnil(vm.state(), -1)) 
+			return;
+
+		if (lua_pcall(vm.state(), 0, LUA_MULTRET, -2))
+			//if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
+		{
+			throw std::runtime_error(lua_tostring(vm.state(), -1));
+		}
+		else
+		{
+			erlcpp::tuple_t result(2);
+			result[0] = erlcpp::atom_t("ok");
+			lua_remove(vm.state(), 1);
+			
+			if (lua_gettop(vm.state()) == 0)
+			{
+				enif_fprintf(stderr, "get top is 000000\n");
+				return;
+			}
+			lua_Integer pid =  lua_tointeger(vm.state(), -1);
+			enif_fprintf(stderr, "get_top: %d\n", lua_gettop(vm.state()));
+			
+			lua_pop(vm.state(), 1);
+
+			enif_fprintf(stderr, "get_top: %d\n", lua_gettop(vm.state()));
+
+			result[1] = lua::stack::pop_all(vm.state());
+
+			erlcpp::lpid_t caller;
+			caller.ptr()->pid = (ERL_NIF_TERM)(pid);
+
+			enif_fprintf(stderr, "call get_sun_shine: %d\n", pid);
+
+			send_result_caller(vm, "moon_response", result, caller);
+		}
+	}
+	catch( std::exception & ex )
+	{
+		erlcpp::tuple_t result(2);
+		result[0] = erlcpp::atom_t("error_lua");
+		result[1] = erlcpp::atom_t(ex.what());
+
+		enif_fprintf(stderr, "*** exception when call get_sun_shine : %s\n", ex.what());
+	}
+
+}
 struct call_handler : public base_handler<void>
 {
     using base_handler<void>::operator();
@@ -137,25 +195,29 @@ struct call_handler : public base_handler<void>
 			lua_remove( vm().state(), -2 );
 			
 
-            lua_getglobal(vm().state(), call.fun.c_str());
+            //lua_getglobal(vm().state(), call.fun.c_str());
+            lua_getglobal(vm().state(), "the_only_sun");
+            
+			lua_pushstring(vm().state(), call.fun.c_str());
+			lua_pushinteger(vm().state(), call.caller.to_int());
 
-            lua::stack::push_all(vm().state(), call.args);
+			lua::stack::push(vm().state(), call.args);
 
-            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, -2-call.args.size()))
+            if (lua_pcall(vm().state(), 1 + 2, LUA_MULTRET, -2-1+2))
             //if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
             {
-                erlcpp::tuple_t result(2);
-                result[0] = erlcpp::atom_t("error_lua");
-                result[1] = lua::stack::pop(vm().state());
-                send_result_caller(vm(), "moon_response", result, call.caller);
+                //erlcpp::tuple_t result(2);
+                //result[0] = erlcpp::atom_t("error_lua");
+                //result[1] = lua::stack::pop(vm().state());
+                //send_result_caller(vm(), "moon_response", result, call.caller);
             }
             else
             {
-                erlcpp::tuple_t result(2);
-                result[0] = erlcpp::atom_t("ok");
-				lua_remove(vm().state(), 1);
-                result[1] = lua::stack::pop_all(vm().state());
-                send_result_caller(vm(), "moon_response", result, call.caller);
+                //erlcpp::tuple_t result(2);
+                //result[0] = erlcpp::atom_t("ok");
+				//lua_remove(vm().state(), 1);
+                //result[1] = lua::stack::pop_all(vm().state());
+                //send_result_caller(vm(), "moon_response", result, call.caller);
             }
         }
         catch( std::exception & ex )
@@ -242,6 +304,8 @@ vm_t::vm_t(erlcpp::lpid_t const& pid)
 
 	luaopen_LuaXML_lib(luastate_.get());
 
+	luaopen_lanes_core(luastate_.get());
+
 	mongo_bsontypes_register(luastate_.get());
 	mongo_connection_register(luastate_.get());
 	mongo_replicaset_register(luastate_.get());
@@ -300,7 +364,8 @@ void vm_t::run()
         for(;;)
         {
             perform_task<call_handler>(*this);
-        }
+			dispatch(*this);
+		}
     }
     catch(quit_tag) {}
     catch(std::exception & ex)

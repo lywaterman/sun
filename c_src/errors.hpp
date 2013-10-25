@@ -18,6 +18,19 @@ struct unsupported_type : public std::runtime_error
     unsupported_type(std::string const& msg) : std::runtime_error(msg) {}
 };
 
+struct sun_dead: public std::runtime_error
+{
+    sun_dead() : std::runtime_error("sun_dead") {}
+    sun_dead(std::string const& msg) : std::runtime_error(msg) {}
+};
+
+struct sunshine_dead: public std::runtime_error
+{
+    sunshine_dead() : std::runtime_error("sunshine_dead") {}
+    sunshine_dead(std::string const& msg) : std::runtime_error(msg) {}
+};
+
+
 struct invalid_type : public std::runtime_error
 {
     invalid_type() : std::runtime_error("invalid_type") {}

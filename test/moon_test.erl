@@ -11,16 +11,35 @@ the_test_() ->
             },
             {"Erlang -> Lua type mapping",
                 fun() ->
-                    Script = <<"function test(Arg, Type) return type(Arg) == Type end">>,
+					io:format("fuckyou-------------------------------------------------"),
+						%%Script = <<"function test(fucname, pid, Arg, Type) return type(Arg) == Type end">>,
+						%%
+						Script = <<"
+									global_thing_to_burn = {}
+									function the_only_sun(fname, pid, Args) 
+										global_thing_to_burn = global_thing_to_burn or {}
+										global_thing_to_burn[pid] = {fun=fname, args=Args} 
+								    end">>,
+						Script1 = <<"function get_sun_shine() 
+										for k, v in pairs(global_thing_to_burn) do 
+											return 'fuckyou', k
+										end 
+								     end">>,
+						
                     ?assertMatch({ok, undefined}, moon:eval(vm, Script)),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [nil, <<"nil">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [true, <<"boolean">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [false, <<"boolean">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [42, <<"number">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [42.5, <<"number">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [hello, <<"string">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [<<"hello">>, <<"string">>])),
-                    ?assertMatch({ok, true}, moon:call(vm, test, [[], <<"table">>]))
+
+                    ?assertMatch({ok, undefined}, moon:eval(vm, Script1)),
+					?assertMatch({ok, <<"fuckyou">>}, moon:call(vm, test, [123, 123])),
+					?assertMatch({ok, <<"fuckyou">>}, moon:call(vm, test, [123, 123]))
+					%%io:format("~p~n", moon:call(vm, test, [123, 123]))
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [nil, <<"nil">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [true, <<"boolean">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [false, <<"boolean">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [42, <<"number">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [42.5, <<"number">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [hello, <<"string">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [<<"hello">>, <<"string">>])),
+                    %%?assertMatch({ok, true}, moon:call(vm, test, [[], <<"table">>]))
                 end
             },
             {"Lua -> Erlang type mapping",
