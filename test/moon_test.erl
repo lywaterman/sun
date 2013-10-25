@@ -14,7 +14,12 @@ the_test_() ->
 					io:format("fuckyou-------------------------------------------------"),
 						%%Script = <<"function test(fucname, pid, Arg, Type) return type(Arg) == Type end">>,
 						%%
+						ok = moon:load(vm, <<"/home/liuyang/sun/sun/test/root.lua">>),
 						Script = <<"
+									print(lanes)
+									for k, v in pairs(lanes) do
+										print(k)
+									end		
 									global_thing_to_burn = {}
 									function the_only_sun(fname, pid, Args) 
 										global_thing_to_burn = global_thing_to_burn or {}
