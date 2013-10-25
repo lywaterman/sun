@@ -14,28 +14,25 @@ the_test_() ->
 					io:format("fuckyou-------------------------------------------------"),
 						%%Script = <<"function test(fucname, pid, Arg, Type) return type(Arg) == Type end">>,
 						%%
-						ok = moon:load(vm, <<"/home/liuyang/sun/sun/test/root.lua">>),
-						Script = <<"
-									print(lanes)
-									for k, v in pairs(lanes) do
-										print(k)
-									end		
-									global_thing_to_burn = {}
-									function the_only_sun(fname, pid, Args) 
-										global_thing_to_burn = global_thing_to_burn or {}
-										global_thing_to_burn[pid] = {fun=fname, args=Args} 
-								    end">>,
-						Script1 = <<"function get_sun_shine() 
-										for k, v in pairs(global_thing_to_burn) do 
-											return 'fuckyou', k
-										end 
-								     end">>,
-						
-                    ?assertMatch({ok, undefined}, moon:eval(vm, Script)),
+						{AA, FF} =  moon:load(vm, <<"/home/liuyang/sun/sun/test/root.lua">>),
+						file:write_file("/home/liuyang/sun/sun/test/error", FF, [append, binary])
+				%%		Script = <<"
+				%%					global_thing_to_burn = {}
+				%%					function the_only_sun(fname, pid, Args) 
+				%%						global_thing_to_burn = global_thing_to_burn or {}
+				%%						global_thing_to_burn[pid] = {fun=fname, args=Args} 
+				%%				    end">>,
+				%%		Script1 = <<"function get_sun_shine() 
+				%%						for k, v in pairs(global_thing_to_burn) do 
+				%%							return 'fuckyou', k
+				%%						end 
+				%%				     end">>,
+				%%		
+                %%    ?assertMatch({ok, undefined}, moon:eval(vm, Script)),
 
-                    ?assertMatch({ok, undefined}, moon:eval(vm, Script1)),
-					?assertMatch({ok, <<"fuckyou">>}, moon:call(vm, test, [123, 123])),
-					?assertMatch({ok, <<"fuckyou">>}, moon:call(vm, test, [123, 123]))
+                %%    ?assertMatch({ok, undefined}, moon:eval(vm, Script1)),
+				%%	?assertMatch({ok, <<"fuckyou">>}, moon:call(vm, test, [123, 123])),
+				%%	?assertMatch({ok, <<"fuckyou">>}, moon:call(vm, test, [123, 123]))
 					%%io:format("~p~n", moon:call(vm, test, [123, 123]))
                     %%?assertMatch({ok, true}, moon:call(vm, test, [nil, <<"nil">>])),
                     %%?assertMatch({ok, true}, moon:call(vm, test, [true, <<"boolean">>])),
